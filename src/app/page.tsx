@@ -1,95 +1,108 @@
-import Image from "next/image";
 import styles from "./page.module.css";
+import Navbar from "@/components/Navbar";
+import Menu from "@/components/Menu";
+import HeroSection from "@/components/HeroSection";
+import ProductsSection from "@/components/ProductsSection";
+import Footer from "@/components/Footer";
+import Head from 'next/head';
+import { Metadata } from 'next';
 
-export default function Home() {
+async function getProducts(category: string | null) {
+  const url = category
+    ? `https://fakestoreapi.com/products/category/${category}`
+    : "https://fakestoreapi.com/products";
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function getCategories() {
+  const res = await fetch("https://fakestoreapi.com/products/categories");
+  return res.json();
+}
+
+// SEO Metadata
+export const metadata: Metadata = {
+  title: 'Our Amazing Products | Appscrip',
+  description: 'Discover our wide range of high-quality products. From electronics to fashion, we have everything you need.',
+  openGraph: {
+    title: 'Our Amazing Products | Appscrip',
+    description: 'Discover our wide range of high-quality products. From electronics to fashion, we have everything you need.',
+    images: [
+      {
+        url: 'https://appscrip.com/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Our Amazing Products',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Our Amazing Products | Your Store Name',
+    description: 'Discover our wide range of high-quality products. From electronics to fashion, we have everything you need.',
+    images: ['https://appscrip.com/twitter-image.jpg'],
+  },
+}
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: { category: string | undefined };
+}) {
+  const category = searchParams.category || null;
+  const productsPromise = getProducts(category);
+  const categoriesPromise = getCategories();
+
+  const [products, categories] = await Promise.all([
+    productsPromise,
+    categoriesPromise,
+  ]);
+
+  // Schema.org JSON-LD
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Our Amazing Products",
+    "description": "Discover our wide range of high-quality products. From electronics to fashion, we have everything you need.",
+    "url": "https://appscrip.com",
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": products.map((product:any, index:number) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "Product",
+          "name": product.title,
+          "description": product.description,
+          "image": product.image,
+          "url": `https://appscrip.com/product/${product.id}`
+        }
+      }))
+    }
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <>
+      <Head>
+        <script type="application/ld+json">
+          {JSON.stringify(schemaData)}
+        </script>
+      </Head>
+      <main className={styles.main}>
+        <div style={{ padding: "1rem 5rem" }}>
+          <Navbar />
+          <Menu />
+          <h1>Discover Our Amazing Products</h1>
+          <HeroSection />
+          <h2>Featured Products</h2>
+          <ProductsSection
+            initialProducts={products}
+            initialCategories={categories}
+            initialCategory={category || ""}
+          />
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        <Footer />
+      </main>
+    </>
   );
 }
