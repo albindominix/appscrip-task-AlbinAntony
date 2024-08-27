@@ -5,11 +5,11 @@ const Menu:React.FC = () => {
   return (
     <div className={styles.menuContainer}>
       <div className={styles.menuItems}>
-        <h3>Shop</h3>
-        <h3>Skills</h3>
-        <h3>Stores</h3>
-        <h3>About</h3>
-        <h3>Contact Us</h3>
+        <h4>Shop</h4>
+        <h4>Skills</h4>
+        <h4>Stores</h4>
+        <h4>About</h4>
+        <h4>Contact Us</h4>
       </div>
     </div>
   )

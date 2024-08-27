@@ -92,9 +92,7 @@ export default async function Home({
         <div style={{ padding: "1rem 5rem" }}>
           <Navbar />
           <Menu />
-          <h1>Discover Our Amazing Products</h1>
           <HeroSection />
-          <h2>Featured Products</h2>
           <ProductsSection
             initialProducts={products}
             initialCategories={categories}
